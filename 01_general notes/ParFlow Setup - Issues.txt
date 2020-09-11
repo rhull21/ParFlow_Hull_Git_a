@@ -1,0 +1,5 @@
+ParFlow Setup: 
+
+09092020: 
+	Issues - unable to set up environment
+		(module load error)

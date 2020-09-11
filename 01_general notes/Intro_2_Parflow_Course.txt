@@ -1,0 +1,325 @@
+Parflow Short Course:
+	Lecture 01 - 
+		Model types:
+			Conceptual
+			Physical
+			Numerical
+		Different Approaches 
+			1) simple and efficient
+			2) comprehensive and expensive
+			Q: What else might we lose by asking for more?
+		Coputational Hydrology:
+			Hard, but best way to relax assumptions
+			- use nonlinear PDEs
+			- use parallel solutions
+			- solve 'real' problems is hard
+		Models can provide insight: 
+			- controlled numerical experiments
+			elucidate process interactinos under change
+			- ie follow a singl perturbation (eg 
+			temperature increase) through entire 
+			'nonlinear' system. 
+			Q: Why this harping on 'non-linearality'?
+				Is this a code-word for describing
+				'complexity'. 
+			A: Because they are difficult to approximate
+				since there are no closed-form analytical solutions
+		
+		Q: Where does a conversation about
+			'assumptions' come in?
+			
+	The ParFlow Hydrologic Model: 
+		
+		- an 'integrated' model that considers
+			many 'coupled' processes
+			
+			Parallel Keywords:
+				Parallel
+				Multigrid
+				Coupled
+				Integrated
+			
+		- borne from a tradiational watershd model 
+			that is situation-based, and involved multiple 'decision points'	
+			
+			but improved!
+			
+		- The integrated hydrologic model accounts for:
+			- Variably Saturated Groundwater Flow
+			- Fully Integrated Surface Water
+			- Parallel Implementation
+			- Coupled Land Surface Processes
+				- Land-Energy Balance
+				- Slow Dynamics
+				- Drive by Meteorology
+			
+		Q: How well do I need to know the equations
+			- Darcy (steady flow) 
+			- Richards' Equation - variably saturated flow
+				-> In reality difficult to approximate
+				because it is a nonlinear PDE
+			- Overland flow
+				-> coupled with unsaturated flow?
+			- Terrain Following Grid EQ
+				-> presumably advantageous because
+				grid sizing and spacing is often-times
+				orthagonal and doesn't represent the 
+				complexity of a surface very well.
+			
+		Further Reading:
+			"Blueprint for a Physically-Based, Digitally-Simulated Hydrologic Response Model" Freeze, Harlan
+			- Darcy (steady flow)
+			- Richards' Equation - variably saturated subsurface flow
+			Overland flow
+			- Terrain Following Grid EQ
+			- ParFlow web page:
+				www.parflow.org 
+				Github
+				https://github.com/parflow/parflow
+				ParFlow Blog
+				http://parflow.blogspot.com/
+				ParFlow User’s list
+				parflow-users@mailman.mines.edu
+			- ParFlow has a long development history
+				• Ashby and Falgout 1996, parallel 
+				multigrid saturated flow
+				• Jones and Woodward 2001, parallel 
+				Richards’ equation flow
+				• Maxwell and Miller 2005, CLM coupling
+				• Kollet and Maxwell 2006, parallel 
+				overland flow
+				• Maxwell 2013, Terrain following grid
+					
+	Lecture 02 - Workflow Outline ** IMPORTANT **
+		Detailed Outline: 
+			1. Evaluate available model inputs
+			2. Determine your domain configuration
+			3. Process topography
+			4. Setup the subsurface
+			5. Initialize the model (i.e. spinup)
+			6. Additional setup for PF-CLM
+			
+		1. Evaluate available model inputs
+			- Land surface (i.e. DEM)
+			- Subsurface Configuration (i.e. K, saturation, for soil and deeper media)
+			- Atmosphere (i.e. moisture flux, precip)
+			- Land Cover (Parflow CLM)
+			
+		2. Determine your domain configuration
+			- What are your questions?
+			- What inputs are available?
+			
+			Related: 
+				a) Define Lateral Resolution and Domain Extent (e.g. location, size, and resolution of model area)
+				b) Subsurface Configuration (e.g. thickness, terrain or orthogonal)
+				c) Constant or variable thickness
+				d) boundary Conditions - external conditions (see MANUAL 6.1.24)
+					(e.g. ref pressure, ref flux, ref volume)
+					
+		3. Process topography
+			- Convert from DEM to slopes, adjust values
+				for a realistic drainage network
+					(e.g. stream burning described by June)
+			- note PFTools calculates slopes from DEM within Parflow
+				but not recommended because:
+					"When you calculate slopes from DEMs you 
+					are not guaranteed to get a fully connected 
+					drainage network"
+			- Many Tools Can Help Convert DEM to slopes
+				1) GRASS GIS - see ParFlow Blog (http://parflow.blogspot.com/2015/08/terrain-processing.html)
+				2) Priority Flood Tool - see github https://github.com/lecondon/PriorityFlow
+				3) Parking Lot Test - make domain impervious, rain on it, and see what happens
+			
+			Q: This seems like a huge issue; do existing
+				USGS datasets that delimit watershed boundaries
+				help?
+			
+		4. Setup the subsurface
+			- Develop a gridded representation of subsurface
+			a) Identify unique subsurface units and provide their geometries to Parflow (e.g. confining layers)
+				Q: Confining layers, right?
+			b) Assign hydrologic properties to e/a unit (e.g. permeability)
+			
+		5. Initialize the model (i.e. spinup)
+			- Get the model ready to answer the question you want to ask...
+			- Determine the starting groundwater configuration for simulations
+			- nb_1: This process is question-dependent -> there is no single appraoch to spinup. 
+			- nb_2: Important develop a suitable domain FIRST (parts 1-4).
+				^ Can start with GW first, because it is easiest
+				
+			Q: So we've initialized our system, added inputs. How do we 'test' 
+			that our model is 'solving nicely'?
+				Representing the 'natural system' (as it exists now) well?
+				
+				How do we accomplish this? By changing the boundary conditions?
+				
+			Example Spin-up:
+				1) Initilize water table
+					a) fully saturate
+					b) fully dry it out
+					c) or make an intelligent guess
+					
+				2) Run for a long time with constant / periodic forcing at land surface
+				until you get a 'stable' configuration.
+				
+		
+		6. Additional setup for PF-CLM
+			- Add land-cover and meteorological data
+			
+		Further Reading:
+			'Stream Burning' - 
+				"The practice of DEM stream burning revisted"
+				"Routing overland flow through sinks and flats in interpolated raster terrain surfaces..."
+				Grass GIS - ParFlow Blog (http://parflow.blogspot.com/2015/08/terrain-processing.html)
+				Priority Flood Tool - see github https://github.com/lecondon/PriorityFlow
+			Spinning up - 
+				- http://parflow.blogspot.com/2015/08/spinning-up-watershed-model.html
+					1) Need to initialize model to achieve 
+							a dynamic equilibrium before 
+							doing other testing on the domain. 
+						a) Check that system isn't evolving
+						b) Check that model solves smoothly
+						
+					2) An adequate 'spin-up' is subjective, but a general approach is: 
+						i) Initialize water table (simple, stupid)
+						ii) Run for a long time (hundreds of years)
+							* Use a constant, or historical cyclical recharge
+							- Goal: Achieve 'steady state'
+						iii) Add surface flow 
+							- Goal: Full return of streams + no changes in Gwater storage
+						iv) Add CLM (climate variables), if necessary
+						
+					3) Revisit 'spin-up' metrics. Look for: 
+						a) changes in total subsurface storage
+						b) changes in total surface storage
+						c) changes in total overland flow
+						
+						If you see significant changes, rinse and repeat
+						
+	Lesson 03 - Overview: Interacting with ParFlow
+		eg What is the spin-up process (step number 5 in previous)
+	
+		Overview:
+			1. How you tell Parflow what to do/be?
+			2. How do I get my inputs into the model?
+			3. How do I press go?
+			4. What comes out and how do I look at it?
+			
+		Workflow:
+			a) TCL input script
+			b) pfrun command
+			c) run script
+		
+		1) How you tell Parflow what to do/be? (Model Input File)
+			ie. set up subsurface domain, set up timing
+			
+			Other notes: 
+				i) TCL/TK scripting language
+					Q: Important to learn outside of Parflow?
+				ii) input parameters using `pfset` commands
+				iii) Keys used to build database that ParFlow uses
+				iv) Parflow exectued by `pfrun` command
+				v) input file (script) is run like a program				
+		
+		2) How do I get my inputs into the model? (Reading Gridded Files)
+			ie. setting up existing rasters (like DEMs) in Parflow
+			nb: need to convert inputs from .txt to .pfb to use in models
+			nb: this can be done in PFTools
+			
+			Other notes:
+				PFB: is Parflow's native file types, work in ParFlow and PFTools
+					Q: What is the difference between ParFlow and PFTools?
+				FILO: Another common file type, work best in PFTools, and can be written in ParFlow
+				PFTools Commands:
+					pfload - READS PFB files (and others)
+					pfsave - WRITES PFB files (and others)
+					nb once dataset is loaded it may be manipulated with many tools
+			
+					
+		3) How do I press go? (Running ParFlow Simulation)
+			ie. after steps 1 and 2 how do I run model
+			
+			a) use pfrun command to:
+				i) build database of keys
+				ii) Execute Program
+			b) parallelization: split problem across multiple processors
+				i) generally we split our problem in across the x, y, and z divisions
+			c) Distribution: need to allocate one portion of the file per procesor
+				i) allocate portions of files to processers using `pfdist` and `pfundist`
+			
+			
+		4) What comes out and how to look at it? (Handling outputs)
+			ie. looking at what the model makes
+			
+			a) most output file structures look like this:
+				`project.out.var.time.ext`
+					(there will be a lot of them for a given model run)
+					(see notes for more) 
+					
+			b) Visualize using:
+				i) Paraview
+				ii) VISIT
+				iii) Or use existing tools within PFTools to visualize simply
+		
+		
+		--------------
+			Further Reading:
+				i) What is the difference between ParFlow and PFTools?
+					One appears to be a database tool (for keys?) PFTools
+					The other appears to be the model itself PARFLOW
+				ii) Consult Manual for more information
+					- Script-building (section 3.6)
+					- Test Problems (section 3.5)
+					- Detail input keys (section 6) 
+					- raster file format (6.2-6.7)
+					- File Distribution (4.2)
+				iii) download or look at visualizing tools
+					a) ParaView: https://paraview.org
+					b) Visit: http://www.llnl.gov/visit/
+					
+	Lesson 04 - Setting up a watershed model: Part 1
+		Consult section 3.1.2 of manual + download ParFlow
+		
+			(Steps 2 and 3 from previous)
+				2. Determine your domain configuration
+				3. Process topography
+			
+			Q: NEED TO REVISIT ONCE I HAVE PARFLOW DOWNLOADED
+			
+			Trouble-shooting:
+				1. Check	that	ParFlow is	actually	installed	correctly	
+					and	that	you	are	able	to	run	the	test	problems.
+				2. Look	at	the	out.txt file	to	see	if	you	are	missing	a	
+					key	in	your	tcl script
+				3. Make	sure	that	all	of	your	input	files	are	where	they	
+					should	be
+				4. If	you	are	running	on	multiple	processors	make	sure	
+					that	every	input	file	is	being	distributed	and	that	
+					the	slopes	files	are	distributed	with	NZ=1	
+				5. Use	PFTools to	convert	your	inputs	to	silo	and	look	
+					to	make	sure	they	aren’t	corrupted	and	the	
+					dimensions	are	right
+					
+	Lesson 05 - Overland Flow simulation in ParFlow
+		
+		Solve for mixed form of Richards' and Shallow Water Equations
+			a) Runoff is thought to be generated by three mechanisms:
+				i) Infiltration excess (too much rain) [Horton] - peaks early
+				ii) Saturation excess (too much water in the pores) [Dunne] - peaks later
+				iii) Subsurface stormflow - peaks much later, and accelerates
+		
+		Q: I don't understand why Richards' + shallow flow equation is so important to Parflow
+		A: A particular application to ParFlow is that it is able to 
+			solve problems around overland flow which previously 
+			has been poorly understood because it is multi-process 
+			and difficult to measure in the field. 
+			
+	Lesson 06 - Settup a watershed model: Part 2
+		Consult section 3.1.2 of manual + download ParFlow
+			
+			(Steps 2 and 3 from previous)
+				4. Setup the subsurface
+				5. 'Spin up' the model
+		
+		
+		
